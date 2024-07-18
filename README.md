@@ -67,6 +67,9 @@ WebChat/
 │   │       login.js                // 登录路由
 │   │       register.js             // 注册路由
 │   │
+│   ├── utils/                      // 工具函数
+│   │       logger.js                 // 日志管理器
+│   │       
 │   ├── views/                      // 视图模板
 │   │       home.ejs                // 主页视图
 │   │       login_error.ejs         // 登录错误视图
@@ -83,18 +86,18 @@ WebChat/
 ├── login/                          // 登录管理服务器相关代码
 │ 
 ├── mysql/                          // mysql服务器相关代码
-|   ├── conf/
-|   │       my.cnf                  // mysql服务器配置文件
-|   │
-|   ├── init/
-|   │       init.sql                // 初始化数据库文件 
-|
+│   ├── conf/
+│   │       my.cnf                  // mysql服务器配置文件
+│   │
+│   ├── init/
+│   │       init.sql                // 初始化数据库文件 
+│
 ├── redis/                          // redis服务器相关代码
-|   ├── conf/
-|   │       redis.conf              // redis服务器配置文件
-|
+│   ├── conf/
+│   │       redis.conf              // redis服务器配置文件
+│
 ├── docker-compose.yml              // 构建docker容器文件
-|
+│
 └── README.md  
 ```
 
