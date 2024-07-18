@@ -12,7 +12,7 @@
   - [安装](#安装)
       - [环境准备](#环境准备)
       - [存储库克隆](#存储库克隆)
-      - [服务启动](#服务启动)
+      - [初次服务启动](#初次服务启动)
   - [使用方法](#使用方法)
   - [环境变量](#环境变量)
 
@@ -82,6 +82,19 @@ WebChat/
 │   
 ├── login/                          // 登录管理服务器相关代码
 │ 
+├── mysql/                          // mysql服务器相关代码
+|   ├── conf/
+|   │       my.cnf                  // mysql服务器配置文件
+|   │
+|   ├── init/
+|   │       init.sql                // 初始化数据库文件 
+|
+├── redis/                          // redis服务器相关代码
+|   ├── conf/
+|   │       redis.conf              // redis服务器配置文件
+|
+├── docker-compose.yml              // 构建docker容器文件
+|
 └── README.md  
 ```
 
@@ -96,20 +109,34 @@ WebChat/
 ```
 git clone https://github.com/24-IM-Group/WebChat.git
 ```
-#### 服务启动
+#### 初次服务启动
 
 - 要启动服务，请执行以下操作：
 ```
-docker-compose up -d
-```
-- 要终止服务，请执行以下操作：
-```
-docker-compose down -v
+docker-compose up -d 
 ```
 
 ## 使用方法
 
-等待后续更新
+- 要暂停服务，请执行以下操作：
+```
+docker-compose stop 
+```
+
+- 要启动服务，请执行以下操作：
+```
+docker-compose start 
+```
+
+- 要重启服务，请执行以下操作：
+```
+docker-compose restart 
+```
+
+- 要终止服务，请执行以下操作：
+```
+docker-compose down -v
+```
 
 ## 环境变量
 

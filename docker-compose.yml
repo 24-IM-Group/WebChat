@@ -16,6 +16,7 @@ services:
     container_name: login
     volumes:
       - ./login:/app/login
+      - ./logs:/app/logs
     networks:
       - webnetwork
     command: sh -c "cd /app/login && npm install --registry=https://registry.npmmirror.com && node app.js"
@@ -25,6 +26,7 @@ services:
     container_name: server1
     volumes:
       - ./server:/app/server
+      - ./logs:/app/logs
     networks:
       - webnetwork
     command: sh -c "cd /app/server && npm install --registry=https://registry.npmmirror.com && node app.js"
@@ -34,6 +36,7 @@ services:
     container_name: server2
     volumes:
       - ./server:/app/server
+      - ./logs:/app/logs
     networks:
       - webnetwork
     command: sh -c "cd /app/server && npm install --registry=https://registry.npmmirror.com && node app.js"

@@ -3,8 +3,6 @@ const path = require("path");
 const http = require("http")
 
 const indexRouter = require("./routes/index");
-const loginRouter = require("./routes/login");
-const registerRouter = require("./routes/register");
 const homeRouter = require("./routes/home");
 
 const sessionMiddleware = require("./middlewares/sessionMiddleware");
@@ -40,8 +38,6 @@ app.set('views', path.join(__dirname, 'views'));
 // 路由列表
 app.use("/", indexRouter);
 app.use("/home", homeRouter);
-app.use("/login", loginRouter);
-app.use("/register", registerRouter);
 
 // 创建 HTTP 服务器
 const server = http.createServer(app);
