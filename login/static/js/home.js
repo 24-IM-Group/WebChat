@@ -27,7 +27,7 @@ let curFriendInfo = {
 socket.on("message", msg => {
     //console.log(`从 ${data.userFrom} 收到消息: ${data.message}`);
     if (msg.type === 0) {
-        if (msg.type === curFriendInfo.type && msg.user_id_from === curFriendInfo.id) {
+        if (msg.type == curFriendInfo.type && msg.user_id_from === curFriendInfo.id) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message');
             messageElement.innerHTML = `
@@ -39,7 +39,7 @@ socket.on("message", msg => {
         }
     }
     else if (msg.type === 1) {
-        if (msg.type === curFriendInfo.type && msg.user_id_from === curFriendInfo.id) {
+        if (msg.type == curFriendInfo.type && msg.user_id_from === curFriendInfo.id) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message');
             messageElement.innerHTML = `
