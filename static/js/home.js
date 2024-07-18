@@ -6,7 +6,7 @@ const logoutBtn = document.querySelector(".logout-button");
 const searchForm = document.querySelector(".search-form");
 const searchInput = document.querySelector(".search-input");
 
-const socket = io("http://localhost:3000");
+const socket = io();
 //const socket = io("192.168.109.73:3000");
 // const socket = io("10.128.56.157:3000");
 
@@ -27,7 +27,7 @@ let curFriendInfo = {
 socket.on("message", msg => {
     //console.log(`从 ${data.userFrom} 收到消息: ${data.message}`);
     if (msg.type === 0) {
-        if (msg.user_id_from === curFriendInfo.id) {
+        if (msg.type === curFriendInfo.type && msg.user_id_from === curFriendInfo.id) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message');
             messageElement.innerHTML = `
@@ -39,14 +39,16 @@ socket.on("message", msg => {
         }
     }
     else if (msg.type === 1) {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message');
-        messageElement.innerHTML = `
-            <div class="message-info">${msg.user_name_from}  ${msg.created_at}</div></div>
-            <div class="message-text">${msg.content}</div>
-        `;
-        chatMessages.appendChild(messageElement);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        if (msg.type === curFriendInfo.type && msg.user_id_from === curFriendInfo.id) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.innerHTML = `
+                <div class="message-info">${msg.user_name_from}  ${msg.created_at}</div></div>
+                <div class="message-text">${msg.content}</div>
+            `;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
     }
 });
 
