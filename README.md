@@ -15,6 +15,19 @@
       - [初次服务启动](#初次服务启动)
   - [使用方法](#使用方法)
   - [环境变量](#环境变量)
+  - [第三方库许可证](#第三方库许可证)
+    - [Redis](#redis)
+    - [MySQL](#mysql)
+    - [crypto-js](#crypto-js)
+    - [dotenv](#dotenv)
+    - [socket.io](#socketio)
+    - [connect-redis](#connect-redis)
+    - [ejs](#ejs)
+    - [express](#express)
+    - [express-session](#express-session)
+    - [http](#http)
+    - [log4js](#log4js)
+    - [path](#path)
 
 ## 简介
 
@@ -161,3 +174,74 @@ RD_HOST=redis
 RD_PORT=6379
 PORT=3000
 ```
+
+## 第三方库许可证
+
+- **[Redis](https://redis.io/)** - BSD 3-Clause "New" or "Revised" License
+- **[MySQL](https://www.mysql.com/)** - GNU General Public License v2.0
+- **[crypto-js](https://github.com/brix/crypto-js)** - MIT License
+- **[dotenv](https://github.com/motdotla/dotenv)** - BSD 2-Clause "Simplified" License
+- **[socket.io](https://socket.io/)** - MIT License
+- **[connect-redis](https://github.com/tj/connect-redis)** - MIT License
+- **[ejs](https://github.com/mde/ejs)** - MIT License
+- **[express](https://github.com/expressjs/express)** - MIT License
+- **[express-session](https://github.com/expressjs/session)** - MIT License
+- **[http]** - Node.js core module (Node.js License)
+- **[log4js]** - Apache License 2.0
+- **[path]** - Node.js core module (Node.js License)
+
+### Redis
+Redis is licensed under the BSD 3-Clause "New" or "Revised" License.
+Full text of the license can be found [here](https://opensource.org/licenses/BSD-3-Clause).
+
+### MySQL
+MySQL is licensed under the GNU General Public License v2.0.
+Full text of the license can be found [here](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+
+### crypto-js
+crypto-js is licensed under the MIT License.
+Full text of the license can be found [here](https://opensource.org/licenses/MIT).
+
+### dotenv
+dotenv is licensed under the BSD 2-Clause "Simplified" License.
+Full text of the license can be found [here](https://opensource.org/licenses/BSD-2-Clause).
+
+### socket.io
+socket.io is licensed under the MIT License.
+Full text of the license can be found [here](https://opensource.org/licenses/MIT).
+ 
+### connect-redis
+connect-redis is licensed under the MIT License.
+Full text of the license can be found [here](https://opensource.org/licenses/MIT).
+
+### ejs
+ejs is licensed under the MIT License.
+Full text of the license can be found [here](https://opensource.org/licenses/MIT).
+
+### express
+express is licensed under the MIT License.
+Full text of the license can be found [here](https://opensource.org/licenses/MIT).
+
+### express-session
+express-session is licensed under the MIT License.
+Full text of the license can be found [here](https://opensource.org/licenses/MIT).
+
+### http
+http is a core module of Node.js and is licensed under the Node.js License.
+Full text of the license can be found [here](https://raw.githubusercontent.com/nodejs/node/master/LICENSE).
+
+### log4js
+log4js is licensed under the Apache License 2.0.
+Full text of the license can be found [here](https://www.apache.org/licenses/LICENSE-2.0).
+
+### path
+path is a core module of Node.js and is licensed under the Node.js License.
+Full text of the license can be found [here](https://raw.githubusercontent.com/nodejs/node/master/LICENSE).
+
+
+
+
+
+
+
+

@@ -75,7 +75,3 @@ networks:
   webnetwork:
     driver: bridge
 
-volumes:
-  mysql_data:
-    driver: local
-  redis_data:
