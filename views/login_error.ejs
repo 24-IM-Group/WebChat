@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>登录</title>
+    <link rel="stylesheet" type="text/css" href="/css/login_err.css">
+</head>
+<body>
+    <div class="container">
+        <h1>登录</h1>
+        <form name="loginForm" action="/login" method="POST">
+            <input type="text"  name="username" placeholder="用户名" value="<%= username %>">
+            <input type="password" name="password" placeholder="密码">
+            <div class="wrong-password" id="wrong-password"><%= errInfo %></div>
+            <input type="submit" value="登录">
+        </form>
+        <div class="subcontainer">
+            <div class="register">
+                还没有账号? <a href="/register">注册</a>
+            </div>
+            <div class="forgot-password">
+                <a href="/static/404.html">忘记密码?</a>
+            </div><!--暂时不写-->
+        </div>
+    </div>
+</body>
+</html>
