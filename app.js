@@ -1,12 +1,8 @@
 const express = require("express");
 const session = require("express-session");
 const createError = require("http-errors");
-const FileStore = require("session-file-store")(session);
 const path = require("path");
-
-const sqlite = require("sqlite3");
 const socketIO = require("socket.io");
-
 
 const app = express();
 
@@ -16,36 +12,73 @@ app.use(express.json());
 const rootDir = __dirname;
 const staticDir = path.join(__dirname, "static");
 app.use(express.static(staticDir));
-
+//+++
+const RedisStore = require('connect-redis').default;
+const redis = require('redis');
+const mysql = require("mysql")
 
 // 设置 EJS 为模板引擎
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/views");
 
 // 配置 session
+//++
+// 创建redis数据库连接
+const redisClient = redis.createClient('6379', '127.0.0.1'); // 端口，主机
+
+// 监听错误信息
+redisClient.on('error', err => {
+  console.error(err) // 打印监听到的错误信息
+});
+
 const sessionMiddleware = session({
     secret: "123456",
     cookie: {
         secure: false,
         httpOnly: true,
         maxAge: 1800000
-
     },
     resave: false,
-    saveUninitialized: false,
-    store: new FileStore()
+    saveUninitialized: true,
+    store: new RedisStore({ client: redisClient })
 });
 
 app.use(sessionMiddleware);
+// 尝试连接到 Redis 服务器
+redisClient.connect().then(() => {
+    console.log('Connected to Redis server successfully!');
+  
+    // 执行 PING 命令来测试连接
+    return redisClient.ping();
+  }).then((response) => {
+    console.log('Redis server responded with:', response);
+  }).catch((err) => {
+    console.error('Error connecting to Redis server:', err);
+  });
 
-// app.get("/test", (req, res) => {
-//     res.sendFile(rootDir + "/static/html/register.html");
-// });
+//连接到mysql
+var sqlConfig = {
+    host: "127.0.0.1",
+	user: "root",
+	password: "123456",
+	database: "login",
+	multipleStatements: true,
+}
 
-// app.post("/test", (req, res) => {
-//     console.log(req.body);
-//     res.json({errInfo: "Form data received!"});
-// });
+var conne = function(){
+    let connection = mysql.createConnection(sqlConfig)
+    connection.connect()
+    connection.on('error',err=>{
+        console.log('Re-connecting lost connection: ');
+        connection = mysql.createConnection(sqlConfig)
+
+    })
+    
+	return connection
+
+}
+
+var db = conne()
 
 
 // 首页路由（默认跳转到登录页面）
@@ -68,8 +101,8 @@ app.post("/login", (req, res, next) => {
     // 获取用户输入数据
     const user = req.body;
     // 查看用户是否存在
-    const db = new sqlite.Database("./data.sqlite");
-    db.get("SELECT * FROM users WHERE name = ?", [user.username], (err, row) => {
+    db.query("SELECT * FROM users WHERE name = ?", [user.username], (err, row) => {
+        row = row[0]
         if (err) next(createError("database query error"));
         else if (user.username == "" || user.password == "") {
             res.render("login_error", {
@@ -77,7 +110,7 @@ app.post("/login", (req, res, next) => {
                 username: user.username
             });
         }
-        else if (row == undefined || row.password != user.password) {
+        else if (row == undefined || row.password !== user.password) {
             res.render("login_error", {
                 errInfo: "用户名或密码错误!",
                 username: user.username
@@ -96,7 +129,6 @@ app.post("/login", (req, res, next) => {
 
 // 用户注册页面
 app.get("/register", (req, res) => {
-
     res.sendFile(rootDir + "/static/html/register.html");
 });
 
@@ -121,10 +153,10 @@ app.post("/register", (req, res, next) => {
     }
     else {
         // 查看是否存在同名用户
-        const db = new sqlite.Database("./data.sqlite");
-        db.get("SELECT * FROM users WHERE name = ?", [user.username], (err, row) => {
+        const sqlStr = `SELECT * FROM users WHERE name = '${user.username}'`
+        db.query(sqlStr, [user.username], (err, row) => {
             if (err) next(createError("database query error"));
-            else if (row !== undefined) {
+            else if (row.length >= 1) {
                 res.render("register_error", {
                     errInfo: "用户名已存在",
                     username: user.username,
@@ -133,12 +165,12 @@ app.post("/register", (req, res, next) => {
                 });
             }
             else {
-                db.run("INSERT INTO users (name, password) VALUES (?, ?)", [user.username, user.password], err => {
+                db.query("INSERT INTO users (name, password) VALUES (?, ?)", [user.username, user.password], err => {
                     if (err) next(createError("注册失败"));
                     else {
                         console.log(`用户 ${user.username} 注册成功!`);
                         // 自动登录
-                        db.get("SELECT * FROM users WHERE name = ?", [user.username], (err, row) => {
+                        db.query("SELECT * FROM users WHERE name = ?", [user.username], (err, row) => {
                             if (err) next(createError("database query error"));
                             else {
                                 req.session.userid = row.id;
@@ -239,14 +271,14 @@ sio.on("connection", (socket) => {
         console.log(`用户 ${sess.username} 已连接 ws`);
     }
 
-    socket.on("message", data => {
+    socket.on("message", msg => {
         //console.log(sess.username + " says " + data.message);
-        if (data.type === 1 && data.userTo === "all") {
+        if (msg.type === 1 && msg.userTo === "all") {
             console.log(`${msg.userFrom} 向 ${msg.userTo} 发送消息: ${msg.message}`);
             storeMessage(msg);
             users.forEach(user => {
                 if (user.userid !== sess.userid) {
-                    user.socket.emit("message", data);
+                    user.socket.emit("message", msg);
                 }
             });            
         }
@@ -255,8 +287,7 @@ sio.on("connection", (socket) => {
 
 function storeMessage(msg) {
     if (msg.userFrom !== undefined && msg.userTo !== undefined && msg.message !== undefined && msg.timestamp !== undefined && msg.type !== undefined) {
-        const db = new sqlite.Database("./data.sqlite");
-        db.run("INSERT INTO messages (userFrom, userTo, message, timestamp, type) VALUES (?, ?, ?, ?, ?)", [msg.userFrom, msg.userTo, msg.message, msg.timestamp, msg.type], err => {
+        db.query("INSERT INTO messages (userFrom, userTo, message, timestamp, type) VALUES (?, ?, ?, ?, ?)", [msg.userFrom, msg.userTo, msg.message, msg.timestamp, msg.type], err => {
             if (err) next(createError("消息插入失败"));
         });
     }
