@@ -47,7 +47,6 @@ services:
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_DATABASE: login
     volumes:
-      - mysql_data:/var/lib/mysql
       - ./mysql/conf/my.cnf:/etc/my.cnf
       - ./mysql/init:/docker-entrypoint-initdb.d/
     networks:
@@ -64,7 +63,6 @@ services:
     ports:
       - 6379:6379
     volumes:
-      - redis_data:/data
       - ./redis/conf/redis.conf:/etc/redis/redis.conf
     networks:
       - webnetwork
@@ -74,7 +72,3 @@ networks:
   webnetwork:
     driver: bridge
 
-volumes:
-  mysql_data:
-    driver: local
-  redis_data:
