@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>主页</title>
+        <link rel="stylesheet" type="text/css" href="/css/home.css">
+        <script src="/js/socket.io.min.js"></script>
+    </head>
+    <body>
+        <div class="whole-container">
+            <div class="friendlist-container">
+                <div class="search-container">
+                    <form class="search-form" id="searchForm">
+                        <input type="text" class="search-input" placeholder="添加好友">
+                        <button type="submit" class="search-icon">
+                    </form>
+                </div>                
+            </div>
+            <div class="chat-container">
+                <div class="user-name">
+                    <span id="cur-username"><%= username %></span>
+                    <button class="logout-button">退出登录</button>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <!-- 聊天消息将显示在这里 -->
+                </div>
+                <form class="chat-form" id="chatForm">
+                    <input type="text" id="messageInput" placeholder="输入消息...">
+                    <input type="submit" value="发送">
+                </form>
+            </div>
+        </div>
+        <script src="/js/home.js"></script>   
+    </body>
+</html>

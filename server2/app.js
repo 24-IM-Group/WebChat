@@ -81,6 +81,30 @@ const sessionMiddleware = session({
 
 app.use(sessionMiddleware);
 
+////////////////////////////////////////////////
+/* Socket 连接 */
+///////////////////////////////////////////////
+const net = require('net');
+
+const client = net.connect({ port: 3003, host: '172.19.0.8' }, () => {
+  console.log('已连接到根服务器');
+});
+
+client.on('data', (msg) => {
+//   console.log(`收到服务器数据: ${data}`);
+    users.forEach(user => {
+        if (user.userid !== msg.user_id_to) {
+            user.socket.emit("message", msg);
+        }
+    });
+});
+
+client.on('end', () => {
+  console.log('连接已关闭');
+});
+
+// client.write('你好，服务器！');
+
 ///////////////////////////////////////////////////////
 /* 路由列表  */
 //////////////////////////////////////////////////////
@@ -202,6 +226,8 @@ app.get("/home", (req, res) => {
     } 
     else {
         req.session.views++;
+        const userid = req.session.userid;
+        updateUser(userid);
         res.render("home", {
             username: req.session.username
         });
@@ -234,7 +260,7 @@ app.get("/logout", (req, res) => {
 });
 
 
-const server = app.listen(3000, () => {
+const server = app.listen(3002, () => {
     const addr = server.address().address;
     const port = server.address().port;
 
@@ -310,11 +336,17 @@ sio.on("connection", (socket) => {
         // 私聊消息
         else if (msg.type === 0) {
             console.log(`用户 ${msg.user_name_from} 向用户 ${msg.user_name_to} 发送消息: ${msg.content}`);
-            users.forEach(user => {
-                if (user.userid === msg.msg_to) {
-                    user.socket.emit("message", msg);
-                }
-            })
+            const userTo = users.filter(user => user.userid === msg.user_id_to);
+            if (userTo.length !== 0) {
+                users.forEach(user => {
+                    if (user.userid === msg.user_id_to) {
+                        user.socket.emit("message", msg);
+                    }
+                })
+            }
+            else {
+                sendMsg(msg);
+            }
         }
     });
 
@@ -396,7 +428,7 @@ function storeMessage(msg) {
             });
         }
         else if (type === 0) {
-            db.query("INSERT INTO messages (user_id_from, user_name_from, user_id_to, user_name_from, content, created_at) VALUES (?, ?, ?, ?, ?, ?)", [user_id_from, user_name_from, user_id_to, user_name_to, content, created_at], err => {
+            db.query("INSERT INTO messages (user_id_from, user_name_to, user_id_to, user_name_from, content, created_at) VALUES (?, ?, ?, ?, ?, ?)", [user_id_from, user_name_from, user_id_to, user_name_to, content, created_at], err => {
                 if (err) next(createError("消息插入失败"));
             });            
         }
@@ -408,5 +440,21 @@ function storeMessage(msg) {
         console.log(msg);
         console.log("消息格式错误，无法存入消息记录");
     }
+}
+
+function updateUser(userid) {
+    data = {
+        type: "update",
+        id: userid
+    };
+    client.write(data);
+}
+
+function sendMsg(msg) {
+    data = {
+        type: "msg",
+        msg: msg
+    };
+    client.write(data);
 }
 
