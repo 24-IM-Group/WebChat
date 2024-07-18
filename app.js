@@ -22,6 +22,7 @@ app.set("view engine", "ejs");
 app.set("views", __dirname + "/views");
 
 // 配置 session
+//++
 // 创建redis数据库连接
 const redisClient = redis.createClient('6379', '127.0.0.1'); // 端口，主机
 
