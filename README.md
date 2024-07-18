@@ -10,6 +10,9 @@
   - [功能](#功能)
   - [项目结构](#项目结构)
   - [安装](#安装)
+      - [环境准备](#环境准备)
+      - [存储库克隆](#存储库克隆)
+      - [服务启动](#服务启动)
   - [使用方法](#使用方法)
   - [环境变量](#环境变量)
 
@@ -84,7 +87,25 @@ WebChat/
 
 ## 安装
 
-等待后续更新
+#### 环境准备
+
+- 在服务器上使用 Compose 插件或 docker-compose 安装 Docker。有关安装详细信息，请访问 [Docker Compose 安装指南](https://blog.csdn.net/weixin_44330367/article/details/130281711)。
+
+#### 存储库克隆
+
+```
+git clone https://github.com/24-IM-Group/WebChat.git
+```
+#### 服务启动
+
+- 要启动服务，请执行以下操作：
+```
+docker-compose up -d
+```
+- 要终止服务，请执行以下操作：
+```
+docker-compose down -v
+```
 
 ## 使用方法
 
