@@ -5,6 +5,7 @@ const friendList = document.querySelector(".friendlist-container");
 const logoutBtn = document.querySelector(".logout-button");
 const searchForm = document.querySelector(".search-form");
 const searchInput = document.querySelector(".search-input");
+const userName = document.querySelector("#cur-username");
 
 const socket = io();
 
@@ -59,6 +60,7 @@ socket.on("logout", data => {
 
 /* 监听“用户信息”消息 */
 socket.on("userinfo", userInfo => {
+    userName.innerHTML = userInfo.username;
     curUserInfo.id = userInfo.userid;
     curUserInfo.name = userInfo.username;
     curUserInfo.friendList = userInfo.friendList;

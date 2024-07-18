@@ -10,7 +10,7 @@ router.get("/", (req, res) => {
     } 
     else {
         res.render("home", {
-            username: req.session.username
+            username: ""
         });
     }
 });
@@ -26,7 +26,7 @@ router.get("/logout", (req, res) => {
             console.error(err.message);
         }
     });
-    res.redirect("/");
+    res.redirect("/login");
 });
 
 module.exports = router;

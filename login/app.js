@@ -32,7 +32,7 @@ app.use(sessionMiddleware);
 
 // 设置 EJS 为模板引擎
 app.set("view engine", "ejs");
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', "./views");
 
 // 路由列表
 app.use("/", indexRouter);
