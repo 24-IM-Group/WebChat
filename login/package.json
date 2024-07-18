@@ -1,0 +1,30 @@
+{
+  "name": "WebChat",
+  "version": "1.0.0",
+  "description": "A chat room application based on web",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/24-IM-Group/WebChat.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/24-IM-Group/WebChat/issues"
+  },
+  "homepage": "https://github.com/24-IM-Group/WebChat#readme",
+  "dependencies": {
+    "connect-redis": "^7.1.1",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.8",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "http": "^0.0.1-security",
+    "mysql": "^2.18.1",
+    "path": "^0.12.7",
+    "redis": "^4.6.13"
+  }
+}

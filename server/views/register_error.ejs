@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>注册</title>
+    <link rel="stylesheet" type="text/css" href="/css/register.css">
+</head>
+<body>
+    <div class="container">
+        <h1>注册</h1>
+        <form name="registerForm" id="registerForm" action="/register" method="POST">
+            <input type="text" name="username" id="username" placeholder="用户名" value="<%= username %>">
+            <input type="password" name="password" id="password" placeholder="输入密码" value="<%= password %>">
+            <input type="password" name="confirmPassword" id="confirmPassword" placeholder="再次输入密码" value="<%= confirmPassword %>">
+            <div class="errInfo" id="err"><%= errInfo %></div>
+            <input type="submit" value="注册">
+        </form>
+    </div>
+</body>
+</html>

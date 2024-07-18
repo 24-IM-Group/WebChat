@@ -1,0 +1,10 @@
+.vscode/
+.idea/
+login/node_modules/
+login/package-lock.json
+login/.vscode/
+login/.idea/
+server/node_modules/
+server/package-lock.json
+server/.vscode/
+server/.idea/
