@@ -3,8 +3,10 @@ const session = require("express-session");
 const createError = require("http-errors");
 const FileStore = require("session-file-store")(session);
 const path = require("path");
+
 const sqlite = require("sqlite3");
 const socketIO = require("socket.io");
+
 
 const app = express();
 
@@ -14,6 +16,7 @@ app.use(express.json());
 const rootDir = __dirname;
 const staticDir = path.join(__dirname, "static");
 app.use(express.static(staticDir));
+
 
 // 设置 EJS 为模板引擎
 app.set("view engine", "ejs");
@@ -26,6 +29,7 @@ const sessionMiddleware = session({
         secure: false,
         httpOnly: true,
         maxAge: 1800000
+
     },
     resave: false,
     saveUninitialized: false,
@@ -92,6 +96,7 @@ app.post("/login", (req, res, next) => {
 
 // 用户注册页面
 app.get("/register", (req, res) => {
+
     res.sendFile(rootDir + "/static/html/register.html");
 });
 
