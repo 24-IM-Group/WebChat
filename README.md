@@ -108,6 +108,8 @@ WebChat/
 ├── redis/                          // redis服务器相关代码
 │   └── conf/
 │           redis.conf              // redis服务器配置文件
+│ 
+├── logs/                           // 保存系统日志文件
 │
 ├── docker-compose.yml              // 构建docker容器文件
 │
