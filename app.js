@@ -3,6 +3,7 @@ const session = require("express-session");
 const createError = require("http-errors");
 const path = require("path");
 const socketIO = require("socket.io");
+const dbConfig = require("./config/database");
 
 const app = express();
 
@@ -21,16 +22,51 @@ const mysql = require("mysql")
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/views");
 
-// 配置 session
-//++
+// 配置数据库
 // 创建redis数据库连接
-const redisClient = redis.createClient('6379', '127.0.0.1'); // 端口，主机
+const redisConfig = dbConfig.redisConfig;
+const redisClient = redis.createClient({
+    url: `redis://${redisConfig.host}:${redisConfig.port}`
+}); // 端口，主机
 
 // 监听错误信息
 redisClient.on('error', err => {
   console.error(err) // 打印监听到的错误信息
 });
 
+// 尝试连接到 Redis 服务器
+redisClient.connect().then(() => {
+    console.log('Connected to Redis server successfully!');
+  
+    // 执行 PING 命令来测试连接
+    return redisClient.ping();
+  }).then((response) => {
+    console.log('Redis server responded with:', response);
+  }).catch((err) => {
+    console.error('Error connecting to Redis server:', err);
+  });
+
+// mysql 配置
+const sqlConfig = dbConfig.mysqlConfig;
+
+// 创建 mysql 连接
+const conne = function(){
+    let connection = mysql.createConnection(sqlConfig)
+    connection.connect()
+    connection.on('error',err=>{
+        console.log('Re-connecting lost connection: ');
+        connection = mysql.createConnection(sqlConfig)
+
+    })
+    
+	return connection
+
+}
+
+const db = conne()
+
+
+// 配置 session
 const sessionMiddleware = session({
     secret: "123456",
     cookie: {
@@ -44,42 +80,10 @@ const sessionMiddleware = session({
 });
 
 app.use(sessionMiddleware);
-// 尝试连接到 Redis 服务器
-redisClient.connect().then(() => {
-    console.log('Connected to Redis server successfully!');
-  
-    // 执行 PING 命令来测试连接
-    return redisClient.ping();
-  }).then((response) => {
-    console.log('Redis server responded with:', response);
-  }).catch((err) => {
-    console.error('Error connecting to Redis server:', err);
-  });
 
-//连接到mysql
-var sqlConfig = {
-    host: "127.0.0.1",
-	user: "root",
-	password: "123456",
-	database: "login",
-	multipleStatements: true,
-}
-
-var conne = function(){
-    let connection = mysql.createConnection(sqlConfig)
-    connection.connect()
-    connection.on('error',err=>{
-        console.log('Re-connecting lost connection: ');
-        connection = mysql.createConnection(sqlConfig)
-
-    })
-    
-	return connection
-
-}
-
-var db = conne()
-
+///////////////////////////////////////////////////////
+/* 路由列表  */
+//////////////////////////////////////////////////////
 
 // 首页路由（默认跳转到登录页面）
 app.get("/", (req, res) => {
@@ -110,11 +114,17 @@ app.post("/login", (req, res, next) => {
                 username: user.username
             });
         }
-        else if (row == undefined || row.password !== user.password) {
+        else if (row == undefined) {
             res.render("login_error", {
-                errInfo: "用户名或密码错误!",
+                errInfo: "用户名不存在!",
                 username: user.username
             });
+        }
+        else if (row.password !== user.password) {
+            res.render("login_error", {
+                errInfo: "密码错误!",
+                username: user.username
+            });            
         }
         else {
             req.session.status = "login success";
@@ -153,8 +163,7 @@ app.post("/register", (req, res, next) => {
     }
     else {
         // 查看是否存在同名用户
-        const sqlStr = `SELECT * FROM users WHERE name = '${user.username}'`
-        db.query(sqlStr, [user.username], (err, row) => {
+        db.query("SELECT * FROM users WHERE name = ?", [user.username], (err, row) => {
             if (err) next(createError("database query error"));
             else if (row.length >= 1) {
                 res.render("register_error", {
@@ -171,15 +180,14 @@ app.post("/register", (req, res, next) => {
                         console.log(`用户 ${user.username} 注册成功!`);
                         // 自动登录
                         db.query("SELECT * FROM users WHERE name = ?", [user.username], (err, row) => {
-                            if (err) next(createError("database query error"));
-                            else {
-                                req.session.userid = row.id;
-                                req.session.status = "login success";
-                                req.session.views = 0;
-                                req.session.username = user.username;
-                                res.redirect("/home");
-                                console.log(`用户 ${user.username} 登录成功!`);
-                            }
+                            if (err) createError("database query error");
+                            row = row[0];
+                            req.session.userid = row.id;
+                            req.session.status = "login success";
+                            req.session.views = 0;
+                            req.session.username = user.username;
+                            res.redirect("/home");
+                            console.log(`用户 ${user.username} 登录成功!`);
                         });
                     }
                 });
@@ -194,14 +202,12 @@ app.get("/home", (req, res) => {
     } 
     else {
         req.session.views++;
-        // res.write("<!DOCTYPE html>\r\n<html lang='zh-CN'>\r\n<head>\r\n<meta charset='utf-8'>\r\n<title>主页</title>\r\n</head>\r\n<body>");
-        // res.write(`<p>Hello, ${req.session.username}, welcome to homepage</p>`, "utf-8");
-        // res.write(`<p>这是第 ${req.session.views} 次访问</p>`, "utf-8");
-        // res.write(`<p>会话将于 ${Math.floor(req.session.cookie.maxAge/60000)} 分钟后过期</p>`, "utf-8");;
-        // res.end("</body></html>");
         res.render("home", {
             username: req.session.username
         });
+        // res.render("draft", {
+        //     username: req.session.username
+        // });
     }
 });
 
@@ -213,6 +219,9 @@ app.get("/logout", (req, res) => {
     users.forEach(user => {
         if (user.userid !== sess.userid) {
             newUsers.push(user);
+        }
+        else {
+            user.socket.disconnect();
         }
     });
     users = newUsers;
@@ -226,12 +235,17 @@ app.get("/logout", (req, res) => {
 
 
 const server = app.listen(3000, () => {
-    
+    const addr = server.address().address;
     const port = server.address().port;
 
-    console.log("示例应用正在监听 %s 端口 !", port);
+    console.log(`Server running on http://${addr}:${port}`);
 });
 
+////////////////////////////////////////////////
+/* WebSocket 连接 */
+///////////////////////////////////////////////
+
+// 全局用户信息表
 let users = new Array();
 
 const sio = socketIO(server);
@@ -241,24 +255,14 @@ sio.engine.use(sessionMiddleware);
 sio.on("connection", (socket) => {
     const sess = socket.request.session;
 
-    // const curTime = new Date();
-    // let msg = {
-    //     userFrom: "server", 
-    //     message: "Hello from server",
-    //     userTo: sess.username,
-    //     timeStamp: curTime.toLocaleString()
-    // };
-
-    // socket.emit("message", msg);
-    // console.log(`服务器已发送消息: ${msg.message}`);
-
+    // 查看 ws 连接是否已存在
     const userExist = users.filter(user => user.userid === sess.userid);
     if (userExist.length !== 0) {
         users.forEach(user => {
             if (user.userid === sess.userid) {
                 user.socket.emit("logout", {message: "当前用户已在其他地方登录"});
                 user.socket = socket;
-                console.log(`${user.username} 的 ws 连接已改变`);
+                console.log(`用户 ${user.username} 的 ws 连接已改变`);
             }
         })
     }
@@ -271,27 +275,138 @@ sio.on("connection", (socket) => {
         console.log(`用户 ${sess.username} 已连接 ws`);
     }
 
+    // 好友列表
+    let friendList = [{id: 1, name: "World", type: 1}];
+    db.query("SELECT * FROM friendships WHERE user_id = ?", [sess.userid], (err, rows) => {
+        if (err) createError("用户好友信息查询失败");
+        if (rows.length !== 0) {
+            for (let row of rows) {
+                let friendItem = {id: row.friend_id, name: row.friend_name, type: 0}
+                friendList.push(friendItem)
+            }
+        }
+        // 用户信息
+        const userInfo = {
+            userid: sess.userid,
+            username: sess.username,
+            friendList: friendList
+        };
+        socket.emit("userinfo", userInfo);
+    });
+
+
+    // 监听客户端聊天消息
     socket.on("message", msg => {
-        //console.log(sess.username + " says " + data.message);
-        if (msg.type === 1 && msg.userTo === "all") {
-            console.log(`${msg.userFrom} 向 ${msg.userTo} 发送消息: ${msg.message}`);
-            storeMessage(msg);
+        storeMessage(msg);
+        // 群聊消息
+        if (msg.type === 1) {
+            console.log(`用户 ${msg.user_name_from} 在群聊 ${msg.user_name_to} 发送消息: ${msg.content}`);
             users.forEach(user => {
                 if (user.userid !== sess.userid) {
                     user.socket.emit("message", msg);
                 }
             });            
         }
+        // 私聊消息
+        else if (msg.type === 0) {
+            console.log(`用户 ${msg.user_name_from} 向用户 ${msg.user_name_to} 发送消息: ${msg.content}`);
+            users.forEach(user => {
+                if (user.userid === msg.msg_to) {
+                    user.socket.emit("message", msg);
+                }
+            })
+        }
+    });
+
+    // 监听客户端消息记录请求
+    socket.on("msgHistory", data => {
+        const user_id = data.userid;
+        const friend_id = data.friendid;
+        const type = data.type;
+        // 私聊消息记录
+        if (type === 0) {
+            //console.log(`SELECT * FROM messages WHERE (user_from = ${user_id} AND user_to = ${friend_id}) OR (user_from = ${friend_id} AND user_to = ${user_id}) ORDER BY id ASC`)
+            db.query("SELECT * FROM messages WHERE (user_id_from = ? AND user_id_to = ?) OR (user_id_from = ? AND user_id_to = ?) ORDER BY message_id ASC", [user_id, friend_id, friend_id, user_id], (err, rows) => {
+                if (err) next(createError("消息记录查询失败"));
+                // socket.emit("msgHistory", [rows, 0]);
+                rows.forEach(row => {
+                    socket.emit("msgHistory", [row, 0]);
+                });
+            });
+        }
+        // 群聊消息记录
+        else if (type === 1) {
+            db.query("SELECT * FROM group_messages WHERE group_id = ? ORDER BY message_id ASC", [friend_id], (err, rows) => {
+                if (err) next(createError("消息记录查询失败"));
+                rows.forEach(row => {
+                    // const msg = {
+                    //     user_id_from: row.user_id_from,
+                    //     user_name_from: row.user_name_from,
+                    //     user_id_to: row.user_id_to,
+                    //     user_name_to: row.user_name_to,
+                    //     content: row.content,
+                    //     created_at: row.created_at
+                    // };
+                    socket.emit("msgHistory", [row, 1]);
+                });
+            });
+        }
+    });
+
+    // 监听客户端“搜索好友”消息请求
+    socket.on("search", searchReq => {
+        let searchRes = {};
+        db.query("SELECT * FROM users WHERE name = ?", [searchReq.friendname], (err, rows) => {
+            if (err) createError(err);
+            if (rows.length === 0) {
+                searchRes = {
+                    friend_info: {},
+                    status: 0,
+                    info: "用户不存在"
+                };
+                socket.emit("search", searchRes);
+            }
+            else {
+                const row = rows[0];
+                db.query("INSERT INTO friendships (user_id, friend_id, user_name, friend_name) VALUES (?, ?, ?, ?), (?, ?, ?, ?);", [searchReq.user_id, row.id, searchReq.username, row.name, row.id, searchReq.user_id, row.name, searchReq.username], err => {
+                    if (err) createError(err);
+                    console.log(`用户 ${searchReq.username} 已添加用户 ${row.name} 为好友`)
+                    searchRes = {
+                        friend_info: {
+                            id: row.id,
+                            name: row.name,
+                            type: 0
+                        },
+                        status: 1,
+                        info: "成功添加好友"
+                    };
+                    socket.emit("search", searchRes);
+                });
+            }
+        });
     });
 });
 
 function storeMessage(msg) {
-    if (msg.userFrom !== undefined && msg.userTo !== undefined && msg.message !== undefined && msg.timestamp !== undefined && msg.type !== undefined) {
-        db.query("INSERT INTO messages (userFrom, userTo, message, timestamp, type) VALUES (?, ?, ?, ?, ?)", [msg.userFrom, msg.userTo, msg.message, msg.timestamp, msg.type], err => {
-            if (err) next(createError("消息插入失败"));
-        });
+    const [user_id_from, user_name_from, user_id_to, user_name_to, content, created_at, type] = [msg.user_id_from, msg.user_name_from, msg.user_id_to, msg.user_name_to, msg.content, msg.created_at, msg.type];
+    if (user_id_from !== undefined && user_id_to !== undefined && content !== undefined && created_at !== undefined && type !== undefined) {
+        if (type === 1) {
+            db.query("INSERT INTO group_messages (group_id, user_id, user_name, content, created_at) VALUES (?, ?, ?, ?, ?)", [user_id_to, user_id_from, user_name_from, content, created_at], err => {
+                if (err) next(createError("消息插入失败"));
+            });
+        }
+        else if (type === 0) {
+            db.query("INSERT INTO messages (user_id_from, user_name_from, user_id_to, user_name_from, content, created_at) VALUES (?, ?, ?, ?, ?, ?)", [user_id_from, user_name_from, user_id_to, user_name_to, content, created_at], err => {
+                if (err) next(createError("消息插入失败"));
+            });            
+        }
+        else {
+            console.log("消息类型错误，仅存在私聊消息(0)与群聊消息(1)");
+        }
     }
     else {
+        console.log(msg);
         console.log("消息格式错误，无法存入消息记录");
     }
 }
+
