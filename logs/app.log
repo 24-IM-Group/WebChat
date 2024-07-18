@@ -1,5 +1,0 @@
-[2024-07-18T03:52:08.000] [INFO] info - ::ffff:172.19.0.5 : GET /
-[2024-07-18T03:52:15.647] [INFO] info - ::ffff:172.19.0.5 : POST /
-[2024-07-18T03:52:15.659] [INFO] info - ::ffff:172.19.0.5 : [登录成功] 用户 admin
-[2024-07-18T03:52:15.673] [INFO] info - ::ffff:172.19.0.5 : GET /
-[2024-07-18T03:52:15.827] [INFO] info - [连接成功] 用户 admin - socketId TnPWGd1hKUljXGcrAAAB

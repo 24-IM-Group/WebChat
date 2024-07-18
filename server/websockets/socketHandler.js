@@ -4,6 +4,7 @@ const msgPool = require("../models/message");
 const gmsgPool = require("../models/groupMessage");
 const fsPool = require("../models/friendShip");
 const usPool = require("../models/usMap");
+const logger = require("../utils/logger");
 
 module.exports = (sio) => {
     sio.on("connection", (socket) => {
@@ -14,24 +15,12 @@ module.exports = (sio) => {
         // 更新 ws 连接
         socket.userid = curUserId;
         socket.username = curUserName;
-        // usPool.get(curUserId)
-        //     .then(row => {
-        //         if (row !== null) {
-        //             const delSocket = sio.in(row.socket_id).fetchSockets();
-        //             if (delSocket) {
-        //                 delSocket.emit('logout', { message: "当前账号已在其他地方登录!" });
-        //                 delSocket.disconnect();
-        //             }
-        //         }
-        //     })
-        //     .catch(err => {
-        //         console.log("user_socket 表查询失败\n", err.message);
-        //     });  
         usPool.set(curUserId, curSocketId);
-        console.log(`用户 ${curUserName} 已连接`);  
+        logger.info(`[连接成功] 用户 ${curUserName} - socketId ${curSocketId}`);
+        //console.log(`用户 ${curUserName} 已连接`);  
     
         // 更新好友列表
-        let friendList = [{id: 1, name: "World", type: 1}];
+        let friendList = [{id: 1, name: "世界聊天室", type: 1}];
         fsPool.getFriendsById(curUserId)
             .then(rows => {
                 if (rows !== null) {
@@ -52,7 +41,8 @@ module.exports = (sio) => {
                 });
             })
             .catch(err => {
-                console.log("当前用户好友列表查询失败\n", err.message);
+                logger.error(`[查询失败] 用户 ${curUserName} 好友列表查询失败 - ${err.message}`);
+                //console.log("当前用户好友列表查询失败\n", err.message);
             });
     
     
@@ -60,13 +50,15 @@ module.exports = (sio) => {
         socket.on("message", msg => {
             // 群聊消息
             if (msg.type === 1) {
-                console.log(`用户 ${msg.user_name_from} 在群聊 ${msg.user_name_to} 发送消息: ${msg.content}`);
+                //console.log(`用户 ${msg.user_name_from} 在群聊 ${msg.user_name_to} 发送消息: ${msg.content}`);
+                logger.info(`[群聊消息] 群聊 ${msg.user_name_to} - 用户 ${msg.user_name_from} - 消息 ${msg.content}`);
                 socket.broadcast.emit('message', msg);
                 gmsgPool.store(msg);   
             }
             // 私聊消息
             else if (msg.type === 0) {
-                console.log(`用户 ${msg.user_name_from} 向用户 ${msg.user_name_to} 发送消息: ${msg.content}`);
+                //console.log(`用户 ${msg.user_name_from} 向用户 ${msg.user_name_to} 发送消息: ${msg.content}`);
+                logger.info(`[私聊消息] From ${msg.user_name_from} - To ${msg.user_name_to} - 消息 ${msg.content}`);
                 usPool.get(msg.user_id_to)
                     .then(row => {
                         if (row !== null) {
@@ -74,7 +66,8 @@ module.exports = (sio) => {
                         }
                     })
                     .catch(err => {
-                        console.log("user_socket 表查询失败\n", err.message);
+                        logger.error(`[查询失败] user_socket 表查询失败 - ${err.message}`);
+                        //console.log("user_socket 表查询失败\n", err.message);
                     });
                 msgPool.store(msg);
             }
@@ -94,7 +87,8 @@ module.exports = (sio) => {
                         })
                     })
                     .catch(err => {
-                        console.error("messages 表查询失败\n", err.message);
+                        logger.error(`[查询失败] messages 表查询失败 - ${err.message}`);
+                        //console.error("messages 表查询失败\n", err.message);
                     });
             }
             // 群聊消息记录
@@ -106,7 +100,8 @@ module.exports = (sio) => {
                         });
                     })
                     .catch(err => {
-                        console.error("group_messages 表查询失败", err.message);
+                        logger.error(`[查询失败] group_messages 表查询失败 - ${err.message}`);
+                        //console.error("group_messages 表查询失败", err.message);
                     });
             }
         });
@@ -128,7 +123,8 @@ module.exports = (sio) => {
                         fsPool.create(searchReq.user_id, row.id, searchReq.username, row.name)
                             .then(result => {
                                 if (result === "Operation success") {
-                                    console.log(`用户 ${searchReq.username} 已添加用户 ${row.name} 为好友`)
+                                    logger.info(`[添加好友] 用户 ${searchReq.username} - 用户 ${row.name}`);
+                                    //console.log(`用户 ${searchReq.username} 已添加用户 ${row.name} 为好友`)
                                     searchRes = {
                                         friend_info: {
                                             id: row.id,
@@ -142,12 +138,14 @@ module.exports = (sio) => {
                                 }
                             })
                             .catch(err => {
-                                console.error("friendships 表查询失败\n", err.message);
+                                logger.error(`[查询失败] friendships 表查询失败 - ${err.message}`);
+                                //console.error("friendships 表查询失败\n", err.message);
                             });
                     }
                 })
                 .catch(err => {
-                    console.error("users 表查询失败\n", err.message);
+                    logger.error(`[查询失败] users 表查询失败 - ${err.message}`);
+                    //console.error("users 表查询失败\n", err.message);
                 });
         });
 

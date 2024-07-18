@@ -8,3 +8,4 @@ server/node_modules/
 server/package-lock.json
 server/.vscode/
 server/.idea/
+logs/
