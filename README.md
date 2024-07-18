@@ -102,16 +102,21 @@ WebChat/
 │   ├── conf/
 │   │       my.cnf                  // mysql服务器配置文件
 │   │
-│   ├── init/
-│   │       init.sql                // 初始化数据库文件 
+│   └── init/
+│           init.sql                // 初始化数据库文件 
 │
 ├── redis/                          // redis服务器相关代码
-│   ├── conf/
-│   │       redis.conf              // redis服务器配置文件
+│   └── conf/
+│           redis.conf              // redis服务器配置文件
 │
 ├── docker-compose.yml              // 构建docker容器文件
 │
-└── README.md  
+├── CHANGELOG.md                    // 更新日志
+│
+├── LICENESE                        // 许可证
+│
+└── README.md
+
 ```
 
 ## 安装
